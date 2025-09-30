@@ -106,7 +106,7 @@ Create `/etc/cni/net.d/10-mynet.conf`:
 ## 8. Configure containerd
 Create `/etc/containerd/config.toml`:
 ```toml
-version = 3
+version = 2
 
 [grpc]
   address = "/run/containerd/containerd.sock"

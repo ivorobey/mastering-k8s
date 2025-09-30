@@ -1,0 +1,19 @@
+# Kubernetes binaries
+kubebuilder/bin/
+testbin/
+ 
+# etcd data
+etcd/
+ 
+# Temporary files
+*.tmp
+*.log
+*.wal
+ 
+# OS files
+.DS_Store
+*~
+ 
+# IDE files
+.vscode/
+.idea/
