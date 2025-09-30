@@ -302,3 +302,10 @@ sudo kubebuilder/bin/kubectl get all -A
 11. Start kubelet
 12. Start controller manager
 13. Verify setup
+
+## solution
+```
+sudo kubebuilder/bin/kubectl taint nodes codespaces-f2f82a node.cloudprovider.kubernetes.io/uninitialized:NoSchedule-
+```
+
+![alt text](image.png)
