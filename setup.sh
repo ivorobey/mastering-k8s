@@ -97,7 +97,7 @@ setup_configs() {
     fi
 
     if [ ! -f "/tmp/token.csv" ]; then
-        TOKEN="1234567890"
+        export TOKEN="1234567890"
         echo "${TOKEN},admin,admin,system:masters" > /tmp/token.csv
     fi
 
@@ -138,7 +138,7 @@ EOF
 
     # Configure containerd
     cat <<EOF | sudo tee /etc/containerd/config.toml
-version = 2
+version = 3
 
 [grpc]
   address = "/run/containerd/containerd.sock"
@@ -224,7 +224,7 @@ start() {
         return 0
     fi
 
-    HOST_IP=$(hostname -I | awk '{print $1}')
+    export HOST_IP=$(hostname -I | awk '{print $1}')
     
     # Download components if needed
     download_components
@@ -312,8 +312,18 @@ start() {
             --v=1 &
     fi
 
+    # Wait for node to register
+    echo "Waiting for node to register..."
+    for i in {1..30}; do
+        if sudo kubebuilder/bin/kubectl get nodes 2>/dev/null | grep -q "$(hostname)"; then
+            echo "Node registered successfully"
+            break
+        fi
+        sleep 1
+    done
+
     # Label the node so static pods with nodeSelector can be scheduled
-    NODE_NAME=$(hostname)
+    export NODE_NAME=$(hostname)
     sudo kubebuilder/bin/kubectl label node "$NODE_NAME" node-role.kubernetes.io/master="" --overwrite || true
 
     if ! is_running "kube-controller-manager"; then
@@ -331,13 +341,19 @@ start() {
     fi
 
     echo "Waiting for components to be ready..."
-    sleep 10
+    sleep 15
 
     echo "Verifying setup..."
     sudo kubebuilder/bin/kubectl get nodes
     sudo kubebuilder/bin/kubectl get all -A
     sudo kubebuilder/bin/kubectl get componentstatuses || true
     sudo kubebuilder/bin/kubectl get --raw='/readyz?verbose'
+    
+    echo ""
+    echo "Setup complete!"
+    echo ""
+    echo "You can now deploy applications:"
+    echo "  sudo kubebuilder/bin/kubectl apply -f manifests/nginx-demo-deployment.yaml"
 }
 
 stop() {
